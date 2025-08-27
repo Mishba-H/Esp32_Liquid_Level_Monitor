@@ -14,19 +14,15 @@ public:
     void update();
 
 private:
-    String _ssid;
-    String _password;
     AsyncWebServer _server;
     AsyncWebSocket _ws;
+    String _ssid;
+    String _password;
     unsigned long _updateTimeMS;
-    int _valueA;
-    String _valueB;
 
-    static void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
-                          AwsEventType type, void *arg, uint8_t *data, size_t len);
-
-    void loadConfig();
-    void saveConfig();
+    static void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
+    void loadNetworkConfig();
+    void saveNetworkConfig();
 };
 
 #endif

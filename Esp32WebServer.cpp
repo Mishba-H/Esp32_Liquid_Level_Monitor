@@ -3,19 +3,19 @@
 Esp32WebServer::Esp32WebServer()
     : _server(80), _ws("/ws"), _updateTimeMS(200), _valueA(0), _valueB("default") {}
 
-void Esp32WebServer::loadConfig() {
+void Esp32WebServer::loadNetworkConfig() {
     if (!SPIFFS.begin(true)) {
         Serial.println("Failed to mount SPIFFS");
         return;
     }
 
-    if (!SPIFFS.exists("/config.json")) {
+    if (!SPIFFS.exists("/network_config.json")) {
         Serial.println("Config file not found, writing default...");
-        saveConfig(); // create default config
+        saveNetworkConfig(); // create default config
         return;
     }
 
-    File file = SPIFFS.open("/config.json", "r");
+    File file = SPIFFS.open("/network_config.json", "r");
     if (!file) {
         Serial.println("Failed to open config.json");
         return;
@@ -26,7 +26,7 @@ void Esp32WebServer::loadConfig() {
     file.close();
 
     if (error) {
-        Serial.print("Failed to parse config.json: ");
+        Serial.print("Failed to parse network_config.json: ");
         Serial.println(error.c_str());
         return;
     }
@@ -34,23 +34,19 @@ void Esp32WebServer::loadConfig() {
     _ssid         = doc["wifi_ssid"]      | "defaultSSID";
     _password     = doc["wifi_password"]  | "defaultPASS";
     _updateTimeMS = doc["serverUpdateTime"] | 200;
-    _valueA       = doc["valueA"]         | 0;
-    _valueB       = doc["valueB"]         | "default";
 
     Serial.println("Config loaded:");
     serializeJsonPretty(doc, Serial);
     Serial.println();
 }
 
-void Esp32WebServer::saveConfig() {
+void Esp32WebServer::saveNetworkConfig() {
     StaticJsonDocument<512> doc;
     doc["wifi_ssid"]       = _ssid;
     doc["wifi_password"]   = _password;
     doc["serverUpdateTime"] = _updateTimeMS;
-    doc["valueA"]          = _valueA;
-    doc["valueB"]          = _valueB;
 
-    File file = SPIFFS.open("/config.json", "w");
+    File file = SPIFFS.open("/network_config.json", "w");
     if (!file) {
         Serial.println("Failed to open config.json for writing");
         return;
@@ -74,12 +70,11 @@ void Esp32WebServer::onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *cli
     }
     else if (type == WS_EVT_DATA) {
         Serial.printf("WebSocket data received (%u bytes)\n", (unsigned)len);
-        // Example: handle JSON updates from client
     }
 }
 
 void Esp32WebServer::begin() {
-    loadConfig();
+    loadNetworkConfig();
 
     Serial.printf("Connecting to SSID: %s\n", _ssid.c_str());
     WiFi.begin(_ssid.c_str(), _password.c_str());
