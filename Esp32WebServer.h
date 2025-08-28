@@ -1,5 +1,5 @@
-#ifndef Esp32WebServer_h
-#define Esp32WebServer_h
+#ifndef ESP32_WEB_SERVER_H
+#define ESP32_WEB_SERVER_H
 
 #include <WiFi.h>
 #include <AsyncTCP.h>

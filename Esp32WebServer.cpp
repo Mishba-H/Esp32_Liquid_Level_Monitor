@@ -1,7 +1,7 @@
 #include "Esp32WebServer.h"
 
 Esp32WebServer::Esp32WebServer()
-    : _server(80), _ws("/ws"), _updateTimeMS(200), _valueA(0), _valueB("default") {}
+    : _server(80), _ws("/ws"), _updateTimeMS(200) {}
 
 void Esp32WebServer::loadNetworkConfig() {
     if (!SPIFFS.begin(true)) {

@@ -6,8 +6,8 @@
 namespace Scheduler {
     typedef void (*command)();
 
-    template <unsigned long wait_ms, command c>
-    void repeat() {
+    template <command c>
+    void repeat(unsigned long wait_ms) {
         static unsigned long start = millis();
         if (millis() - start >= wait_ms) {
             start += wait_ms;

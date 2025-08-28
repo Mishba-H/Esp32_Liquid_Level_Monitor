@@ -1,4 +1,5 @@
 {
-    "trigger_pin": 0,
-    "echo_pin": 0
-}
+    "triggerPin": { "number": 4, "mode": "OUTPUT" },
+    "echoPin": { "number": 5, "mode": "INPUT" },
+    "pushbuttonPin": { "number": 6, "mode": "INPUT_PULLUP" }
+  }
