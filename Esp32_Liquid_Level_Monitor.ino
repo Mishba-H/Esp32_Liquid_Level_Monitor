@@ -130,11 +130,14 @@ void setup() {
     loadPinConfig();
     loadTaskDelayConfig();
 
+    Scheduler::addTask<pushButtonTask>(pushButtonTaskDelay);
+    Scheduler::addTask<ultrasonicSensorTask>(ultrasonicSensorTaskDelay);
+
     startWebServer();
 }
 
 void loop() {
-    Scheduler::repeat<pushButtonTask>(pushButtonTaskDelay);
-    Scheduler::repeat<ultrasonicSensorTask>(ultrasonicSensorTaskDelay);
+    Scheduler::update();
+
     webServer.update();
 }

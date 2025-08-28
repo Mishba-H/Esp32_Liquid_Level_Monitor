@@ -1,4 +1,4 @@
 {
-  "pushButtonTaskDelay": 200,
+  "pushButtonTaskDelay": 0,
   "ultrasonicSensorTaskDelay": 1000
 }

@@ -1,5 +1,5 @@
 {
     "triggerPin": { "number": 4, "mode": "OUTPUT" },
     "echoPin": { "number": 5, "mode": "INPUT" },
-    "pushbuttonPin": { "number": 6, "mode": "INPUT_PULLUP" }
+    "pushbuttonPin": { "number": 12, "mode": "INPUT" }
   }
