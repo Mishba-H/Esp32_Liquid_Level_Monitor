@@ -1,0 +1,8 @@
+{
+    "default_mode": "STA",
+    "wifi_ap_ssid": "Liquid_Level_Monitor",
+    "wifi_ap_password": "12345678",
+    "wifi_sta_ssid": "Your_Home_WiFi_SSID",
+    "wifi_sta_password": "Your_Home_WiFi_Password",
+    "serverUpdateTime": 200
+}

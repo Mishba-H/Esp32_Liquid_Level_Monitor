@@ -38,13 +38,7 @@ void setPinMode(int pin, const char *modeStr)
 
 void loadPinConfig()
 {
-  if (!SPIFFS.begin(true))
-  {
-    Serial.println("Failed to mount SPIFFS");
-    return;
-  }
-
-  File file = SPIFFS.open("/pin_config.json", "r");
+  File file = SPIFFS.open("/config/pin_config.json", "r");
   if (!file)
   {
     Serial.println("Failed to open pin_config.json");
@@ -88,13 +82,7 @@ unsigned long ultrasonicSensorTaskDelay = 1000;
 
 void loadTaskDelayConfig()
 {
-  if (!SPIFFS.begin(true))
-  {
-    Serial.println("Failed to mount SPIFFS");
-    return;
-  }
-
-  File file = SPIFFS.open("/task_delay_config.json", "r");
+  File file = SPIFFS.open("/config/task_delay_config.json", "r");
   if (!file)
   {
     Serial.println("Failed to open task_delay_config.json");
@@ -120,6 +108,7 @@ void loadTaskDelayConfig()
 #pragma endregion
 
 #pragma region PUSH_BUTTON_TASK
+volatile bool modeToggleRequested = false;
 int currentVal;
 int previousVal = LOW;
 unsigned long lastPushTime = 0UL; // the last time the output pin was toggled
@@ -133,6 +122,7 @@ void pushButtonTask() {
     if (millis() - lastPushTime > debounce) {
       lastPushTime = millis();
       Serial.println("push button pushed");
+      modeToggleRequested = true;
     }
   }
 
@@ -149,7 +139,7 @@ enum UltrasonicState
   WAIT_FOR_ECHO_END
 };
 
-UltrasonicState ultrasonic_state = SEND_PULSE;
+UltrasonicState ultrasonic_state = IDLE;
 unsigned long ultrasonic_last_action_time = 0; // Time in microseconds
 unsigned long ultrasonic_echo_start_time = 0;  // Time in microseconds
 
@@ -222,11 +212,16 @@ void setup()
 {
   Serial.begin(115200);
 
+  if (!SPIFFS.begin(true)) {
+        Serial.println("Failed to mount SPIFFS");
+        return;
+    }
+
   loadPinConfig();
   loadTaskDelayConfig();
 
   Scheduler::addTask<pushButtonTask>(pushButtonTaskDelay);
-  // Scheduler::addTask<ultrasonicSensorTask>(ultrasonicSensorTaskDelay);
+  Scheduler::addTask<ultrasonicSensorTask>(ultrasonicSensorTaskDelay);
 
   startWebServer();
   
@@ -235,8 +230,13 @@ void setup()
 
 void loop()
 {
+  if (modeToggleRequested) 
+  {
+    webServer.toggleWifiMode();
+    modeToggleRequested = false; 
+  }
   webServer.update();
   Scheduler::update();
 
-  // handleUltrasonicSensor();
+  handleUltrasonicSensor();
 }
