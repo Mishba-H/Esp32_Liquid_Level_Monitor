@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-
     const configs = [
         { name: 'network', containerId: 'network-fields', formId: 'network-form' },
         { name: 'pins', containerId: 'pin-fields', formId: 'pin-form' },
-        { name: 'tasks', containerId: 'task-fields', formId: 'task-form' }
+        { name: 'system', containerId: 'system-fields', formId: 'system-form' }
     ];
 
     configs.forEach(config => {

@@ -15,31 +15,23 @@ public:
     void begin();
     void update();
     void toggleWifiMode();
+    WifiMode getCurrentMode();
+    void sendTankData(const String& data); // For sending WebSocket data
 
 private:
     AsyncWebServer _server;
     AsyncWebSocket _ws;
 
-    // WiFi Credentials and Mode
     WifiMode _currentMode;
-    String _ap_ssid;
-    String _ap_password;
-    String _sta_ssid;
-    String _sta_password;
+    String _ap_ssid, _ap_password, _sta_ssid, _sta_password;
     
-    // Server setup helpers
     void startAPMode();
     void startSTAMode();
     void configureServerRoutes();
 
-    // Config management
-    void loadNetworkConfig();
-    void saveNetworkMode();
+    void loadNetworkConfig(bool setModeFromConfig);
 
-    // WebSocket event handler
     static void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len);
-    
-    // Generic handler to save a JSON file from a POST request
     static void handleJsonSave(AsyncWebServerRequest *request, const String& filename, uint8_t *data, size_t len, size_t index, size_t total);
 };
 
