@@ -9,36 +9,23 @@
 <body>
     <div class="container">
         <h1>Tank Level Monitor 💧</h1>
-        
-        <div class="monitor-grid">
-            <div class="tank-visual">
-                <div class="tank-body">
-                    <div class="water" id="water-level"></div>
-                </div>
-            </div>
-            <div class="data-display">
-                <div class="data-card">
-                    <h2>Fill Level</h2>
-                    <p id="percentage">--%</p>
-                </div>
-                <div class="data-card">
-                    <h2>Volume</h2>
-                    <p id="volume">-- L</p>
-                </div>
-                <div class="data-card">
-                    <h2>Depth</h2>
-                    <p id="depth">-- cm</p>
-                </div>
+        <div class="tank-visual">
+            <div class="tank-body">
+                <div class="water" id="water-level"></div>
             </div>
         </div>
-        
-        <div class="config-card">
-            <h2>Tank Parameters</h2>
-            <form id="tank-form">
-                <div class="form-fields" id="tank-fields">
-                    </div>
-                <button type="submit">Apply Tank Params</button>
-            </form>
+        <div class="data-display">
+            <div class="data-card">
+                <h2>Fill Level</h2>
+                <p id="percentage">-- %</p>
+            </div>
+            <div class="data-card">
+                <h2>Volume</h2>
+                <p id="volume">-- / -- L</p>
+            </div>
+        </div>
+        <div class="footer">
+            <a href="/config-tank" class="button">Change Tank Parameters</a>
         </div>
     </div>
     <script src="script.js"></script>

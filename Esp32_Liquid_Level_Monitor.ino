@@ -33,10 +33,13 @@ unsigned long triggerTime;
 // --- Forward Declarations ---
 void loadPinConfig();
 void loadSystemConfig();
+void handleWifiModeLed();
 void handleToggleWifiModeButton();
 void handleMeasurement();
 
 void setup() {
+  delay(1000);
+
   Serial.begin(115200);
 
   if (!SPIFFS.begin(true)) {
@@ -55,6 +58,8 @@ void loop() {
   handleToggleWifiModeButton();
   handleMeasurement();
   webServer.update();  // Cleanup websocket clients
+
+  delay(1);
 }
 
 // --- Configuration Loading Functions ---
@@ -147,7 +152,7 @@ void handleMeasurement() {
         }
         // Timeout: If no echo starts after ~30ms, something is wrong. Reset.
         if (currentTime - triggerTime > 30000) {
-          Serial.println("Sensor Echo Timeout!");
+          Serial.println("Could not send trigger!");
           currentState = IDLE;
         }
         break;
@@ -164,9 +169,10 @@ void handleMeasurement() {
 
           // 3. Prepare JSON data
           StaticJsonDocument<256> doc;
-          doc["depth"] = tank.getLiquidDepth();
-          doc["volume"] = tank.getLiquidVolume();
+          doc["volume"] = tank.getLiquidVolume();  // in cm³
           doc["percentage"] = tank.getLiquidPercentage();
+          doc["capacity"] = tank.getFullCapacity();  // in cm³
+
 
           String jsonData;
           serializeJson(doc, jsonData);
@@ -179,7 +185,7 @@ void handleMeasurement() {
         }
         // Timeout: If the echo pulse is too long, it's out of range. Reset.
         if (currentTime - echoStartTime > 30000) {
-          Serial.println("Sensor Echo Timeout!");
+          Serial.println("Did not recieve Echo LOW!");
           currentState = IDLE;
         }
         break;

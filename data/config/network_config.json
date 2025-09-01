@@ -2,7 +2,7 @@
     "default_mode": "STA",
     "wifi_ap_ssid": "Liquid_Level_Monitor",
     "wifi_ap_password": "12345678",
-    "wifi_sta_ssid": "Your_Home_WiFi_SSID",
-    "wifi_sta_password": "Your_Home_WiFi_Password",
+    "wifi_sta_ssid": "Sciphone -2.4G",
+    "wifi_sta_password": "mmh@burnout",
     "serverUpdateTime": 200
 }

@@ -1,7 +1,10 @@
 #include "Esp32WebServer.h"
+#include "Tank.h"
+
+extern Tank tank;
 
 Esp32WebServer::Esp32WebServer()
-  : _server(80), _ws("/ws"), _currentMode(MODE_AP) {}
+  : _server(80), _ws("/ws") {}
 
 WifiMode Esp32WebServer::getCurrentMode() {
   return _currentMode;
@@ -9,7 +12,6 @@ WifiMode Esp32WebServer::getCurrentMode() {
 
 void Esp32WebServer::begin() {
   loadNetworkConfig(true);
-
   configureServerRoutes();
 
   if (_currentMode == MODE_AP) {
@@ -101,31 +103,38 @@ void Esp32WebServer::startSTAMode() {
   Serial.println("Server started in STA Mode.");
 }
 
-// --- The rest of the file is the same ---
+// --- Route Configuration ---
 void Esp32WebServer::configureServerRoutes() {
   _ws.onEvent(onWsEvent);
   _server.addHandler(&_ws);
+
+  // --- Dynamic file serving for root pages ---
   _server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
-    if (this->_currentMode == MODE_AP) {
-      request->send(SPIFFS, "/website_config/index.html", "text/html");
-    } else {
-      request->send(SPIFFS, "/website_monitor/index.html", "text/html");
-    }
+    if (this->_currentMode == MODE_AP) request->send(SPIFFS, "/website_config/index.html", "text/html");
+    else request->send(SPIFFS, "/website_monitor/index.html", "text/html");
   });
   _server.on("/style.css", HTTP_GET, [this](AsyncWebServerRequest *request) {
-    if (this->_currentMode == MODE_AP) {
-      request->send(SPIFFS, "/website_config/style.css", "text/css");
-    } else {
-      request->send(SPIFFS, "/website_monitor/style.css", "text/css");
-    }
+    if (this->_currentMode == MODE_AP) request->send(SPIFFS, "/website_config/style.css", "text/css");
+    else request->send(SPIFFS, "/website_monitor/style.css", "text/css");
   });
   _server.on("/script.js", HTTP_GET, [this](AsyncWebServerRequest *request) {
-    if (this->_currentMode == MODE_AP) {
-      request->send(SPIFFS, "/website_config/script.js", "application/javascript");
-    } else {
-      request->send(SPIFFS, "/website_monitor/script.js", "application/javascript");
-    }
+    if (this->_currentMode == MODE_AP) request->send(SPIFFS, "/website_config/script.js", "application/javascript");
+    else request->send(SPIFFS, "/website_monitor/script.js", "application/javascript");
   });
+
+  // --- NEW: Routes for the dedicated tank config page ---
+  _server.on("/config-tank", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/website_config_tank/index.html", "text/html");
+  });
+  // THIS WAS THE MISSING PART
+  _server.on("/config-tank/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/website_config_tank/style.css", "text/css");
+  });
+  _server.on("/config-tank/script.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/website_config_tank/script.js", "application/javascript");
+  });
+
+  // --- API endpoints ---
   _server.on("/api/network", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/config/network_config.json", "application/json");
   });
@@ -138,22 +147,22 @@ void Esp32WebServer::configureServerRoutes() {
   _server.on("/api/tank", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/config/tank_params.json", "application/json");
   });
+
   _server.on(
-    "/api/save/network", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t l, size_t i, size_t t) {
-      handleJsonSave(request, "/config/network_config.json", data, l, i, t);
+    "/api/save/network", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *d, size_t l, size_t i, size_t t) {
+      handleJsonSave(request, "/config/network_config.json", d, l, i, t);
     });
   _server.on(
-    "/api/save/pins", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t l, size_t i, size_t t) {
-      handleJsonSave(request, "/config/pin_config.json", data, l, i, t);
+    "/api/save/pins", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *d, size_t l, size_t i, size_t t) {
+      handleJsonSave(request, "/config/pin_config.json", d, l, i, t);
     });
   _server.on(
-    "/api/save/system", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t l, size_t i, size_t t) {
-      handleJsonSave(request, "/config/system_config.json", data, l, i, t);
+    "/api/save/system", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *d, size_t l, size_t i, size_t t) {
+      handleJsonSave(request, "/config/system_config.json", d, l, i, t);
     });
   _server.on(
-    "/api/save/tank", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, [](AsyncWebServerRequest *request, uint8_t *data, size_t l, size_t i, size_t t) {
-      handleJsonSave(request, "/config/tank_params.json", data, l, i, t);
-    });
+    "/api/save/tank", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL, handleTankSave);
+
   _server.onNotFound([](AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "Not found");
   });
@@ -171,6 +180,57 @@ void Esp32WebServer::handleJsonSave(AsyncWebServerRequest *request, const String
     request->send(500, "text/plain", "SERVER ERROR: File write failed.");
   }
   file.close();
+}
+// --- Custom Save Handler for Tank Parameters ---
+void Esp32WebServer::handleTankSave(AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+  if (index + len != total) return;
+  StaticJsonDocument<256> doc;
+  if (deserializeJson(doc, data, len)) {
+    request->send(400, "text/plain", "Invalid JSON format");
+    return;
+  }
+  float depth = doc["tank_depth"];
+  float area = doc["tank_cross_section_area"];
+  float capacity = doc["full_tank_capacity"];
+  float offset = doc["sensor_offset"];
+
+  if (depth <= 0 || offset < 0) {
+    request->send(400, "text/plain", "Tank Depth must be positive and Sensor Offset cannot be negative.");
+    return;
+  }
+  if (area > 0 && capacity <= 0) {
+    capacity = area * depth;
+  } else if (capacity > 0 && area <= 0) {
+    area = capacity / depth;
+  } else if (area > 0 && capacity > 0) {
+    if (abs((area * depth) - capacity) > 0.1) {
+      request->send(400, "text/plain", "Inconsistent values: (Area * Depth) does not equal Full Capacity.");
+      return;
+    }
+  } else {
+    request->send(400, "text/plain", "You must provide either Area or Full Capacity.");
+    return;
+  }
+
+  doc["tank_depth"] = depth;
+  doc["tank_cross_section_area"] = area;
+  doc["full_tank_capacity"] = capacity;
+  doc["sensor_offset"] = offset;
+
+  File file = SPIFFS.open("/config/tank_params.json", "w");
+  if (!file) {
+    request->send(500, "text/plain", "Failed to open file for writing.");
+    return;
+  }
+
+  if (serializeJson(doc, file) > 0) {
+    file.close();
+    tank.begin("/config/tank_params.json");  // Reload tank object with new params
+    request->send(200, "text/plain", "OK");
+  } else {
+    file.close();
+    request->send(500, "text/plain", "Failed to write to file.");
+  }
 }
 void Esp32WebServer::sendTankData(const String &data) {
   _ws.textAll(data);
