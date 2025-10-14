@@ -1,0 +1,7 @@
+{
+  "fullTankVolumeCm3": 1000.0,
+  "tankCrossSectionAreaCm2": 100.0,
+  "tankDepthCm": 10.0,
+  "sensorOffsetCm": 5.0,
+  "heightErrorMarginCm": 2.0
+}

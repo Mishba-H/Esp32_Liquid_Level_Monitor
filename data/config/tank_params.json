@@ -1,6 +1,0 @@
-{
-  "full_tank_capacity": 1000.0,
-  "tank_cross_section_area": 100.0,
-  "tank_depth": 10.0,
-  "sensor_offset": 0.05
-}

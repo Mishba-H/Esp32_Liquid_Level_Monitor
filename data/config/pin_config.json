@@ -1,5 +1,0 @@
-{
-    "toggleWifiModeButtonPin": { "number": 4, "mode": "INPUT_PULLUP" },
-    "triggerPin": { "number": 13, "mode": "OUTPUT" },
-    "echoPin": { "number": 14, "mode": "INPUT" }
-}

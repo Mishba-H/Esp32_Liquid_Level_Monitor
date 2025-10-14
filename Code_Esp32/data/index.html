@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquid Level Monitor Config</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Liquid Level Monitor Configuration</h1>
+            <p>Modify settings and press 'Apply' for each section. Some changes may require a device restart.</p>
+        </header>
+
+        <main>
+            <!-- Tank Configuration -->
+            <div class="card">
+                <h2>Tank Parameters</h2>
+                <form id="tank-form">
+                    <div class="form-group">
+                        <label for="tank-area">Tank Cross-Section Area (cm²)</label>
+                        <input type="number" step="0.1" id="tank-area" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tank-depth">Tank Depth (cm)</label>
+                        <input type="number" step="0.1" id="tank-depth" required>
+                    </div>
+                     <div class="form-group">
+                        <label for="tank-volume">Full Tank Volume (Litres)</label>
+                        <input type="text" id="tank-volume" readonly class="readonly">
+                    </div>
+                    <div class="form-group">
+                        <label for="sensor-offset">Sensor Offset from Top (cm)</label>
+                        <input type="number" step="0.1" id="sensor-offset" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="error-margin">Height Error Margin (cm)</label>
+                        <input type="number" step="0.1" id="error-margin" required>
+                    </div>
+                    <button type="submit">Apply Tank Settings</button>
+                </form>
+            </div>
+
+            <!-- System Configuration -->
+            <div class="card">
+                <h2>System Parameters</h2>
+                <form id="system-form">
+                    <div class="form-group">
+                        <label for="measure-interval">Measurement Interval (ms)</label>
+                        <input type="number" id="measure-interval" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="response-timeout">Response Timeout (ms)</label>
+                        <input type="number" id="response-timeout" required>
+                    </div>
+                    <button type="submit">Apply System Settings</button>
+                </form>
+            </div>
+
+            <!-- Network Configuration -->
+            <div class="card">
+                <h2>Network Parameters (Access Point)</h2>
+                <form id="network-form">
+                    <div class="form-group">
+                        <label for="ap-ssid">WiFi Name (SSID)</label>
+                        <input type="text" id="ap-ssid" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ap-password">WiFi Password (min 8 chars)</label>
+                        <input type="password" id="ap-password" minlength="8">
+                    </div>
+                    <button type="submit">Apply Network Settings</button>
+                </form>
+            </div>
+        </main>
+        
+        <footer>
+            <div id="status-message"></div>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
